@@ -15,9 +15,10 @@ def readlines(filename):
 
 
 def write_csv(list, path):
+    path = change_ext(path, '.csv')
     with open(path, 'w', newline='') as f:
         write = csv.writer((f))
-        write.writerows(list)
+        write.writerow(list)
     return True
 
 
