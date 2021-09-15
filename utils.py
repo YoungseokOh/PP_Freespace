@@ -82,6 +82,19 @@ def showing_seg(seg):
     return seg
 
 
+def depth_to_freespace(seg, dep):
+    height, width = seg.shape
+    for w in range(0, width):
+        for h in range(0, height):
+            if seg[h][w] == 0:
+                seg[h][w] = 0
+                pass
+            elif seg[h][w] == 255:
+                seg[h][w] = dep[h][w]
+                pass
+    return seg
+
+
 def change_ext(path, ext):
     path, ext_b = os.path.splitext(path)
     return path + ext
