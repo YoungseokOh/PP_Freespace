@@ -14,6 +14,7 @@ def main():
     stixel_ori_path = home_path + os.path.join('/', 'stixel_results_ori')
     stixel_free_path = home_path + os.path.join('/', 'stixel_results_freespace')
     stixel_freeroad_path = home_path + os.path.join('/', 'stixel_results_real_final')
+    stixel_upgrade_path = home_path + os.path.join('/', 'stixel_results_upgrade')
     stixel_3_save_path = home_path + os.path.join('/', 'stixel_3_results')
     file_list = utils.read_folder_list(stixel_ori_path)
     font = cv2.FONT_HERSHEY_SIMPLEX # put text
@@ -24,6 +25,7 @@ def main():
         depth = cv2.imread(depth_path + os.path.join('/', i), 1)
         seg = cv2.imread(seg_white_path + os.path.join('/', i), 1)
         stixel_freeroad = cv2.imread(stixel_freeroad_path + os.path.join('/', i), 1)
+        stixel_upgrade = cv2.imread(stixel_upgrade_path + os.path.join('/', i), 1)
         stixel_ori = cv2.imread(utils.change_ext(stixel_ori_path + os.path.join('/', i), '.jpg'), 1)
         stixel_free = cv2.imread(utils.change_ext(stixel_free_path + os.path.join('/', i), '.jpg'), 1)
         seg = utils.img_resize(seg, 640, 192)
@@ -35,6 +37,10 @@ def main():
         cv2.putText(stixel_free, "Stixel_w_freespace", (480, 20), font, 0.5, (255, 255, 255), 1)
         cv2.putText(seg, "Freespace", (550, 20), font, 0.5, (255, 255, 255), 1)
         add_v = np.vstack([depth, stixel_ori, stixel_freeroad, stixel_free, seg])
+
+        # cv2.putText(stixel_free, "Before", (570, 20), font, 0.5, (255, 255, 255), 1)
+        # cv2.putText(stixel_upgrade, "After", (580, 20), font, 0.5, (255, 255, 255), 1)
+        # versus_v = np.vstack([stixel_free, stixel_upgrade])
         cv2.imshow('show', add_v)
         cv2.imwrite(save_name, add_v)
         cv2.waitKey(1)

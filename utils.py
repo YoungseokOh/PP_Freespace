@@ -105,7 +105,20 @@ def get_lowerpath(seg):
     height, width = seg.shape
     for w in range(0, width):
         for h in range(0, height):
-            if seg[h][w] == 0:
+            if not seg[h][w] == 0:
                 lowerpath.append(h)
                 break
+            if h == 191:
+                lowerpath.append(h)
     return lowerpath
+
+
+def showing_lower(lower):
+    seg_for_lower_test = np.zeros((192, 213))
+    height, width = seg_for_lower_test.shape
+    for w in range(0, width):
+        for h in range(0, height):
+            if h == lower[w]:
+                seg_for_lower_test[h][w] = lower[w]
+                break
+    return seg_for_lower_test
