@@ -5,6 +5,25 @@ import numpy as np
 import pandas as pd
 import cv2
 
+class file_manager:
+    def __init__(self):
+        self.ori_path = 'Y:/monodepth_results/Monodepth_results_1110/frontview_test'
+        self.seg_path = self.ori_path + '/seg'
+        self.seg_hood_path = self.ori_path + '/seg_hood'
+        self.seg_white = self.ori_path + '/seg_white'
+        self.seg_free_depth = self.ori_path + '/seg_free_depth'
+        self.img_path = self.ori_path + '/test_images'
+        self.dep_path = self.ori_path + '/disp_640x192'
+        self.lower_save_path = self.ori_path + '/lower_path'
+        self.point_cloud_path = self.ori_path + '/point_cloud'
+        self.stixel_ori_path = self.ori_path + '/stixel_results_ori'
+        self.stixel_free_path = self.ori_path + '/stixel_results_freespace'
+        self.stixel_freeroad_path = self.ori_path + '/stixel_results_real_final'
+        self.stixel_upgrade_path = self.ori_path + '/stixel_results_upgrade'
+        self.stixel_3_save_path = self.ori_path + '/stixel_3_results'
+        self.alpha = 1.0
+        self.font = cv2.FONT_HERSHEY_SIMPLEX # put text
+
 
 def readlines(filename):
     """Read all the lines in a text file and return as a list
@@ -122,3 +141,10 @@ def showing_lower(lower):
                 seg_for_lower_test[h][w] = lower[w]
                 break
     return seg_for_lower_test
+
+
+def file_len(fname):
+    with open(fname) as f:
+        for i, l in enumerate(f):
+            pass
+    return i + 1
