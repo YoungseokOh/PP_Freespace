@@ -7,6 +7,7 @@ import cv2
 
 class file_manager:
     def __init__(self):
+        # Paths
         self.ori_path = 'Y:/monodepth_results/Monodepth_results_1110/frontview_test'
         self.seg_path = self.ori_path + '/seg'
         self.seg_hood_path = self.ori_path + '/seg_hood'
@@ -16,13 +17,17 @@ class file_manager:
         self.dep_path = self.ori_path + '/disp_640x192'
         self.lower_save_path = self.ori_path + '/lower_path'
         self.point_cloud_path = self.ori_path + '/point_cloud'
+        self.pc3D_results_path = self.ori_path + '/3d_results'
         self.stixel_ori_path = self.ori_path + '/stixel_results_ori'
         self.stixel_free_path = self.ori_path + '/stixel_results_freespace'
         self.stixel_freeroad_path = self.ori_path + '/stixel_results_real_final'
         self.stixel_upgrade_path = self.ori_path + '/stixel_results_upgrade'
         self.stixel_3_save_path = self.ori_path + '/stixel_3_results'
+        # settings
         self.alpha = 1.0
         self.font = cv2.FONT_HERSHEY_SIMPLEX # put text
+        self.rotation = [-1, 1]
+        self.view_angle = [-185, -90]
 
 
 def readlines(filename):

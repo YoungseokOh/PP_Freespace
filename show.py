@@ -5,21 +5,21 @@ import numpy as np
 import utils
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import open3d as o3d
-from PIL import Image
 
 file_manager = utils.file_manager()
 
 def main():
-    alpha = 1.0 # addweight
-    home_path = 'Y:/monodepth_results/Monodepth_results_1110/frontview_test'
-    depth_path = home_path + os.path.join('/', 'disp_640x192')
     file_list = utils.read_folder_list(file_manager.stixel_ori_path)
-    font = cv2.FONT_HERSHEY_SIMPLEX # put text
     if not utils.check_exist(file_manager.stixel_3_save_path):
         utils.make_folder(file_manager.stixel_3_save_path)
+    if not utils.check_exist(file_manager.pc3D_results_path):
+        utils.make_folder(file_manager.pc3D_results_path)
+    rotation_count = 0
+    azim = file_manager.view_angle[1]
+    fig = plt.figure(figsize=(8, 6))
     for i in file_list:
         save_name = utils.change_ext(file_manager.stixel_3_save_path + os.path.join('/', i), '.jpg')
+        save_name_pc = utils.change_ext(file_manager.pc3D_results_path + os.path.join('/', i), '.jpg')
         depth = cv2.imread(file_manager.dep_path + os.path.join('/', i), 1)
         seg = cv2.imread(file_manager.seg_white + os.path.join('/', i), 1)
         point_cloud_data = np.loadtxt(utils.change_ext(file_manager.point_cloud_path + os.path.join('/', i), '.txt'))
@@ -32,12 +32,23 @@ def main():
         stixel_free = utils.img_resize(stixel_free, 640, 192)
         point_cloud_xyz = point_cloud_data[:, :3]
         point_cloud_rgb = point_cloud_data[:, 3:]
-        fig = plt.figure(figsize=(8,6))
-        ax = Axes3D(fig)
-        ax.scatter(point_cloud_xyz[:, 1], point_cloud_xyz[:, 2], point_cloud_xyz[:, 0],
-                   c=point_cloud_rgb / 255, s=1.0)
-        ax.view_init(-180, -90)
-        plt.show()
+        if not utils.check_exist(save_name_pc):
+            ax = Axes3D(fig)
+            ax.scatter(point_cloud_xyz[:, 1], point_cloud_xyz[:, 2], point_cloud_xyz[:, 0],
+                       c=point_cloud_rgb / 255, s=1.0)
+            ax.view_init(file_manager.view_angle[0], azim)
+            if not rotation_count <= 50:
+                azim = azim - file_manager.rotation[0]
+            else:
+                azim = azim - file_manager.rotation[1]
+            if rotation_count == 100:
+                rotation_count = 0
+            rotation_count += 1
+            plt.tight_layout()
+            fig.savefig(save_name_pc)
+            plt.clf()
+
+        point_cloud_fig = cv2.imread(save_name_pc)
         # cv2.putText(depth, "Depth", (570, 20), font, 0.5, (255, 255, 255), 1)
         # cv2.putText(stixel_ori, "Stixel_original", (520, 20), font, 0.5, (255, 255, 255), 1)
         # cv2.putText(stixel_freeroad, "Stixel_w_roadmodel", (470, 20), font, 0.5, (255, 255, 255), 1)
@@ -46,12 +57,14 @@ def main():
         # add_v = np.vstack([depth, stixel_ori, stixel_freeroad, stixel_free, seg])
 
         # upgrade show
-        cv2.putText(stixel_free, "Before", (570, 20), font, 0.5, (255, 255, 255), 1)
-        cv2.putText(stixel_upgrade, "After", (580, 20), font, 0.5, (255, 255, 255), 1)
-        cv2.putText(stixel_freeroad, "Final", (580, 20), font, 0.5, (255, 255, 255), 1)
-        versus_v = np.vstack([stixel_free, stixel_upgrade, stixel_freeroad])
-        cv2.imshow('show', versus_v)
-        cv2.imwrite(save_name, versus_v)
+        # cv2.putText(stixel_free, "Before", (570, 20), file_manager.font, 0.5, (255, 255, 255), 1)
+        cv2.putText(stixel_upgrade, "After", (580, 20), file_manager.font, 0.5, (255, 255, 255), 1)
+        cv2.putText(stixel_freeroad, "Final", (580, 20), file_manager.font, 0.5, (255, 255, 255), 1)
+        versus_v = np.vstack([stixel_upgrade, stixel_freeroad])
+        point_cloud_fig = utils.img_resize(point_cloud_fig, versus_v.shape[1], versus_v.shape[0])
+        versus_h = np.hstack([versus_v, point_cloud_fig])
+        cv2.imshow('show', versus_h)
+        cv2.imwrite(save_name, versus_h)
         cv2.waitKey(1)
     # seg = utils.road_pp_seg(seg)
     print('Hello world!')
