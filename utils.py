@@ -16,6 +16,7 @@ class file_manager:
         self.img_path = self.ori_path + '/test_images'
         self.dep_path = self.ori_path + '/disp_640x192'
         self.lower_save_path = self.ori_path + '/lower_path'
+        self.final_fs_path = self.ori_path + '/final_fs_results'
         self.point_cloud_path = self.ori_path + '/point_cloud'
         self.pc3D_results_path = self.ori_path + '/3d_results'
         self.stixel_ori_path = self.ori_path + '/stixel_results_ori'
@@ -153,3 +154,15 @@ def file_len(fname):
         for i, l in enumerate(f):
             pass
     return i + 1
+
+
+def read_lower(path):
+    data = pd.read_csv(path, header=None)
+    data = data.iloc[:, 0].tolist()
+    return data
+
+
+def data_save(path, name, data):
+    save_name = change_ext(path + os.path.join('/', name), '.jpg')
+    cv2.imwrite(save_name, data)
+    return True

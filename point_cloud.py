@@ -22,11 +22,12 @@ def main():
         img_b, img_g, img_r = cv2.split(img_color)
         disp_color = cv2.imread(utils.change_ext(file_manager.dep_path + os.path.join('/', i), '.jpg'))
         disp_color = cv2.resize(disp_color, (213, 192))
+        final_lower = utils.read_lower(utils.change_ext(file_manager.final_fs_path + os.path.join('/', i), '.csv'))
         disp_x, disp_y, disp_z = cv2.split(disp_color)
         # Point cloud data saved 256x80\
         if not os.path.exists(point_cloud_txt) or os.path.getsize(point_cloud_txt) == 0:
-            for x in range(0, 192):
-                for y in range(0, 213):
+            for y in range(0, 213):
+                for x in range(final_lower[y], 192):
                     point_cloud_dataname = "%d %d %d %d %d %d\n" %(x, y, disp_z[x][y], img_r[x][y], img_g[x][y], img_b[x][y])
                     k.write(point_cloud_dataname)
                     #print(point_cloud_dataname)

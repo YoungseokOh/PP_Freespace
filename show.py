@@ -27,26 +27,32 @@ def main():
         stixel_upgrade = cv2.imread(file_manager.stixel_upgrade_path + os.path.join('/', i), 1)
         stixel_ori = cv2.imread(utils.change_ext(file_manager.stixel_ori_path + os.path.join('/', i), '.jpg'), 1)
         stixel_free = cv2.imread(utils.change_ext(file_manager.stixel_free_path + os.path.join('/', i), '.jpg'), 1)
+        seg_depth = cv2.imread(utils.change_ext(file_manager.seg_free_depth + os.path.join('/', i), '.jpg'), 1)
+        final_lower = utils.read_lower(utils.change_ext(file_manager.final_fs_path + os.path.join('/', i), '.csv'))
+        show_final_lower = utils.showing_lower(final_lower)
+        show_final_lower = utils.img_resize(show_final_lower, 640, 192)
+        utils.data_save(file_manager.final_fs_path, i, show_final_lower)
+        show_final_lower = cv2.imread(utils.change_ext(file_manager.final_fs_path + os.path.join('/', i), '.jpg'), 1)
         seg = utils.img_resize(seg, 640, 192)
         stixel_ori = utils.img_resize(stixel_ori, 640, 192)
         stixel_free = utils.img_resize(stixel_free, 640, 192)
         point_cloud_xyz = point_cloud_data[:, :3]
         point_cloud_rgb = point_cloud_data[:, 3:]
-        if not utils.check_exist(save_name_pc):
-            ax = Axes3D(fig)
-            ax.scatter(point_cloud_xyz[:, 1], point_cloud_xyz[:, 2], point_cloud_xyz[:, 0],
-                       c=point_cloud_rgb / 255, s=1.0)
-            ax.view_init(file_manager.view_angle[0], azim)
-            if not rotation_count <= 50:
-                azim = azim - file_manager.rotation[0]
-            else:
-                azim = azim - file_manager.rotation[1]
-            if rotation_count == 100:
-                rotation_count = 0
-            rotation_count += 1
-            plt.tight_layout()
-            fig.savefig(save_name_pc)
-            plt.clf()
+        ax = Axes3D(fig)
+        ax.scatter(point_cloud_xyz[:, 1], point_cloud_xyz[:, 2], point_cloud_xyz[:, 0],
+                   c=point_cloud_rgb / 255, s=1.0)
+        ax.view_init(file_manager.view_angle[0], azim)
+        if not rotation_count <= 50:
+            azim = azim - file_manager.rotation[0]
+        else:
+            azim = azim - file_manager.rotation[1]
+        if rotation_count == 100:
+            rotation_count = 0
+        rotation_count += 1
+        plt.show()
+        plt.tight_layout()
+        fig.savefig(save_name_pc)
+        plt.clf()
 
         point_cloud_fig = cv2.imread(save_name_pc)
         # cv2.putText(depth, "Depth", (570, 20), font, 0.5, (255, 255, 255), 1)
@@ -58,9 +64,10 @@ def main():
 
         # upgrade show
         # cv2.putText(stixel_free, "Before", (570, 20), file_manager.font, 0.5, (255, 255, 255), 1)
-        cv2.putText(stixel_upgrade, "After", (580, 20), file_manager.font, 0.5, (255, 255, 255), 1)
+        cv2.putText(depth, "Depth", (580, 20), file_manager.font, 0.5, (255, 255, 255), 1)
         cv2.putText(stixel_freeroad, "Final", (580, 20), file_manager.font, 0.5, (255, 255, 255), 1)
-        versus_v = np.vstack([stixel_upgrade, stixel_freeroad])
+        cv2.putText(show_final_lower, "Freespace", (550, 20), file_manager.font, 0.5, (255, 255, 255), 1)
+        versus_v = np.vstack([depth, stixel_freeroad, show_final_lower])
         point_cloud_fig = utils.img_resize(point_cloud_fig, versus_v.shape[1], versus_v.shape[0])
         versus_h = np.hstack([versus_v, point_cloud_fig])
         cv2.imshow('show', versus_h)
