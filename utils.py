@@ -4,6 +4,9 @@ import os, random
 import numpy as np
 import pandas as pd
 import cv2
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+
 
 class file_manager:
     def __init__(self):
@@ -14,7 +17,8 @@ class file_manager:
         self.seg_white = self.ori_path + '/seg_white'
         self.seg_free_depth = self.ori_path + '/seg_free_depth'
         self.img_path = self.ori_path + '/test_images'
-        self.dep_path = self.ori_path + '/disp_640x192'
+        self.disp_path = self.ori_path + '/disp_640x192'
+        self.depth_path = self.ori_path + '/depth'
         self.lower_save_path = self.ori_path + '/lower_path'
         self.final_fs_path = self.ori_path + '/final_fs_results'
         self.point_cloud_path = self.ori_path + '/point_cloud'
@@ -28,7 +32,8 @@ class file_manager:
         self.alpha = 1.0
         self.font = cv2.FONT_HERSHEY_SIMPLEX # put text
         self.rotation = [-1, 1]
-        self.view_angle = [-185, -90]
+        self.view_angle = [360, 450]
+        # self.view_angle = [360, 450] # rotation left
 
 
 def readlines(filename):
@@ -166,3 +171,61 @@ def data_save(path, name, data):
     save_name = change_ext(path + os.path.join('/', name), '.jpg')
     cv2.imwrite(save_name, data)
     return True
+
+
+def min_max_normalize(lst):
+    normalized = []
+    for value in lst:
+        normalized_num = (value - np.min(lst)) / (np.max(lst) - np.min(lst))
+        normalized.append(normalized_num)
+
+    return normalized
+
+
+def z_score_normalize(lst):
+    normalized = []
+    for value in lst:
+        normalized_num = (value - np.mean(lst)) / np.std(lst)
+        normalized.append(normalized_num)
+    return normalized
+
+
+def create_pointcloud(img, disp_color, x_count=None, final_lower=None):
+    img_b, img_g, img_r = cv2.split(img)
+    point_cloud = []
+    if not x_count is None:
+        if not final_lower is None:
+            for x in range(x_count, x_count+1):
+                for y in range(final_lower[x], img.shape[0]):
+                    point_cloud.append((y, x, disp_color[y][x], img_r[y][x], img_g[y][x], img_b[y][x]))
+        else:
+            return True
+    else:
+        if not final_lower is None:
+            for x in range(0, img.shape[1]):
+                for y in range(final_lower[x], img.shape[0]):
+                    point_cloud.append((y, x, disp_color[y][x], img_r[y][x], img_g[y][x], img_b[y][x]))
+        else:
+            for x in range(0, img.shape[1]):
+                for y in range(0, img.shape[0]):
+                    point_cloud.append((y, x, disp_color[y][x], img_r[y][x], img_g[y][x], img_b[y][x]))
+    return point_cloud
+
+
+def poly_feature(df_feature, degree=2):
+    poly_reg = PolynomialFeatures(degree=degree)
+    X_poly = poly_reg.fit_transform(df_feature)
+    return X_poly, poly_reg
+
+
+def set_regression(depth_list, depth_name_list, degree=2):
+    df_depth_reggresion = pd.DataFrame(depth_list, depth_name_list).T.melt().dropna(axis=0)
+    df_feature, poly_leg = poly_feature(df_depth_reggresion['value'].values.reshape(-1, 1), degree)
+    lin_reg_2 = LinearRegression()
+    # lin_reg_2 = Ridge()
+    lin_reg_2.fit(df_feature, df_depth_reggresion['variable'].values)
+    # lin_reg_2 = RANSACRegressor(random_state=0).fit(df_feature, df_depth_reggresion['variable'].values)
+    predict_Y = lin_reg_2.predict(poly_leg.fit_transform(df_depth_reggresion['value'].values.reshape(-1, 1)))
+    df_depth_reggresion['regression'] = lin_reg_2.predict(
+        poly_leg.fit_transform(df_depth_reggresion['value'].values.reshape(-1, 1)))
+    return df_depth_reggresion

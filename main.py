@@ -13,7 +13,7 @@ def main():
         seg_hood = cv2.imread(file_manager.seg_hood_path + os.path.join('/', i), 0)
         seg_height, seg_width = seg.shape
         img = cv2.imread(utils.change_ext(file_manager.img_path + os.path.join('/', i), '.jpg'), 0)
-        dep = cv2.imread(utils.change_ext(file_manager.dep_path + os.path.join('/', i), '.jpg'), 0)
+        dep = cv2.imread(utils.change_ext(file_manager.disp_path + os.path.join('/', i), '.jpg'), 0)
         img = utils.img_resize(img, 640, 192)
         seg_hood = utils.img_resize(seg, 640, 192)
         dep = utils.img_resize(dep, 640, 192)
