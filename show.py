@@ -41,6 +41,7 @@ def main():
         seg = cv2.imread(file_manager.seg_white + os.path.join('/', i), 1)
         point_cloud_data = np.loadtxt(utils.change_ext(file_manager.point_cloud_path + os.path.join('/', i), '.txt'))
         stixel_freeroad = cv2.imread(file_manager.stixel_freeroad_path + os.path.join('/', i), 1)
+        stixel_prev_results = cv2.imread(file_manager.stixel_previous_results_path + os.path.join('/', i), 1)
         stixel_upgrade = cv2.imread(file_manager.stixel_upgrade_path + os.path.join('/', i), 1)
         stixel_ori = cv2.imread(utils.change_ext(file_manager.stixel_ori_path + os.path.join('/', i), '.jpg'), 1)
         stixel_free = cv2.imread(utils.change_ext(file_manager.stixel_free_path + os.path.join('/', i), '.jpg'), 1)
@@ -49,17 +50,41 @@ def main():
         show_final_lower = utils.img_resize(show_final_lower, 640, 192)
         utils.data_save(file_manager.final_fs_path, i, show_final_lower)
         show_final_lower = cv2.imread(utils.change_ext(file_manager.final_fs_path + os.path.join('/', i), '.jpg'), 1)
+        outlier_path = utils.change_ext(file_manager.distance_path + os.path.join('/', i), '.txt')
+        f = open(outlier_path)
+        file_size = os.path.getsize(outlier_path)
+        outlier_coord = []
+        if file_size == 0:
+            pass
+        else:
+            while True:
+                line = f.readline()
+                if not line: break
+                outlier_coord.append(line[-8:-1])
+            f.close()
+            count = 0
+            for count in range(0, len(outlier_coord)):
+                if outlier_coord[count] == '':
+                    break
+                split_coord = outlier_coord[count].split()
+                show_final_lower = cv2.line(show_final_lower, (int(split_coord[0]) * 3, int(split_coord[1])),
+                     (int(split_coord[0]) * 3, int(split_coord[1])), (255, 255, 0))
+            # cv spot
+            print('read done')
         seg = utils.img_resize(seg, 640, 192)
         stixel_ori = utils.img_resize(stixel_ori, 640, 192)
         stixel_free = utils.img_resize(stixel_free, 640, 192)
+
+        # Save the Point Cloud
         # fig_xbar = plt.figure(figsize=(10, 12))
-        for x in tqdm(range(0, img_color.shape[1]), desc='Saving columns', leave=False):
-            point_cloud_xbar = utils.create_pointcloud(img_color, disp_color, x, final_lower)
-            point_cloud_xbar = np.asarray(point_cloud_xbar)
-            point_cloud_xbar_xyz = point_cloud_xbar[:, :3]
-            x_columns_csv_name = utils.change_ext(save_3d_folder + os.path.join('/%010d' %x), '.npy')
-            np.save(x_columns_csv_name, point_cloud_xbar_xyz)
-        print('{} columns is saved!'.format(i))
+        # for x in tqdm(range(0, img_color.shape[1]), desc='Saving columns', leave=False):
+        #     point_cloud_xbar = utils.create_pointcloud(img_color, disp_color, x, final_lower)
+        #     point_cloud_xbar = np.asarray(point_cloud_xbar)
+        #     point_cloud_xbar_xyz = point_cloud_xbar[:, :3]
+        #     x_columns_csv_name = utils.change_ext(save_3d_folder + os.path.join('/%010d' %x), '.npy')
+        #     np.save(x_columns_csv_name, point_cloud_xbar_xyz)
+        # print('{} columns is saved!'.format(i))
+
         point_cloud_beta = utils.create_pointcloud(img_color, disp_color, None, final_lower)
         point_cloud_data = np.asarray(point_cloud_beta)
         point_cloud_xyz = point_cloud_data[:, :3]
@@ -91,12 +116,13 @@ def main():
         # upgrade show
         # cv2.putText(stixel_free, "Before", (570, 20), file_manager.font, 0.5, (255, 255, 255), 1)
         cv2.putText(disparity, "Depth", (580, 20), file_manager.font, 0.5, (255, 255, 255), 1)
+        cv2.putText(stixel_prev_results, "Before", (580, 20), file_manager.font, 0.5, (255, 255, 255), 1)
         cv2.putText(stixel_freeroad, "Final", (580, 20), file_manager.font, 0.5, (255, 255, 255), 1)
         cv2.putText(show_final_lower, "Freespace", (550, 20), file_manager.font, 0.5, (255, 255, 255), 1)
-        versus_v = np.vstack([disparity, stixel_freeroad, show_final_lower])
+        versus_v = np.vstack([disparity, stixel_prev_results, stixel_freeroad, show_final_lower, ])
         point_cloud_fig = utils.img_resize(point_cloud_fig, versus_v.shape[1], versus_v.shape[0])
         versus_h = np.hstack([versus_v, point_cloud_fig])
-        # cv2.imshow('show', versus_h)
+        cv2.imshow('show', versus_h)
         cv2.imwrite(save_name, versus_h)
         cv2.waitKey(1)
     # seg = utils.road_pp_seg(seg)

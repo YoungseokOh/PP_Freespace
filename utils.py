@@ -26,8 +26,10 @@ class file_manager:
         self.stixel_ori_path = self.ori_path + '/stixel_results_ori'
         self.stixel_free_path = self.ori_path + '/stixel_results_freespace'
         self.stixel_freeroad_path = self.ori_path + '/stixel_results_real_final'
+        self.stixel_previous_results_path = self.ori_path + '/stixel_previous_results'
         self.stixel_upgrade_path = self.ori_path + '/stixel_results_upgrade'
         self.stixel_3_save_path = self.ori_path + '/stixel_3_results'
+        self.distance_path = self.ori_path + '/outlier_path'
         # settings
         self.alpha = 1.0
         self.font = cv2.FONT_HERSHEY_SIMPLEX # put text
