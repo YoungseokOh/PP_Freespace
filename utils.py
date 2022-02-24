@@ -4,6 +4,7 @@ import os, random
 import numpy as np
 import pandas as pd
 import cv2
+import natsort
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 
@@ -11,7 +12,7 @@ from sklearn.linear_model import LinearRegression
 class file_manager:
     def __init__(self):
         # Paths
-        self.ori_path = 'Y:/monodepth_results/Monodepth_results_1110/frontview_test'
+        self.ori_path = 'Y:/monodepth_results/Monodepth_results_1110/frontview_parking_test'
         self.seg_path = self.ori_path + '/seg'
         self.seg_hood_path = self.ori_path + '/seg_hood'
         self.seg_white = self.ori_path + '/seg_white'
@@ -34,7 +35,8 @@ class file_manager:
         self.alpha = 1.0
         self.font = cv2.FONT_HERSHEY_SIMPLEX # put text
         self.rotation = [-1, 1]
-        self.view_angle = [360, 450]
+        self.view_angle = [130, 0]
+        # self.view_angle = [360, 450]
         # self.view_angle = [360, 450] # rotation left
 
 
@@ -56,6 +58,7 @@ def write_csv(list, path):
 
 def read_folder_list(path):
     folder_list = os.listdir(path)
+    folder_list = natsort.natsorted(folder_list)
     return folder_list
 
 
@@ -101,14 +104,14 @@ def road_pp_seg(seg):
 
 
 def showing_seg(seg):
-    seg = road_pp_seg(seg)
+    # seg = road_pp_seg(seg)
     height, width = seg.shape
     for w in range(0, width):
         for h in range(0, height):
-            if seg[h][w] == 1:
+            if seg[h][w] == 0:
                 seg[h][w] = 0
                 pass
-            elif seg[h][w] == 0:
+            elif seg[h][w] == 1:
                 seg[h][w] = 255
                 pass
     return seg
@@ -118,7 +121,7 @@ def depth_to_freespace(seg, dep):
     height, width = seg.shape
     for w in range(0, width):
         for h in range(0, height):
-            if seg[h][w] == 0:
+            if seg[h][w] == 1:
                 seg[h][w] = 0
                 pass
             elif seg[h][w] == 255:
@@ -142,6 +145,19 @@ def get_lowerpath(seg):
                 break
             if h == 191:
                 lowerpath.append(h)
+    return lowerpath
+
+
+def get_lowerpath_from_bottom(seg):
+    lowerpath = []
+    height, width = seg.shape
+    for w in range(0, width):
+        for h in range(height-1, -1, -1):
+            if not seg[h][w] == 0:
+                continue
+            elif seg[h][w] == 0:
+                lowerpath.append(h)
+                break
     return lowerpath
 
 

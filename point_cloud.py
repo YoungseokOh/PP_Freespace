@@ -14,13 +14,15 @@ if not utils.check_exist(file_manager.point_cloud_path):
 
 def main():
     for i in file_list:
+        if not os.path.splitext(i)[1] == '.png':
+            continue
         point_cloud_txt = utils.change_ext(file_manager.point_cloud_path + os.path.join('/', i), '.txt')
         k = open(point_cloud_txt, 'w')
         # # Img read
-        img_color = cv2.imread(utils.change_ext(file_manager.img_path + os.path.join('/', i), '.jpg'), cv2.IMREAD_COLOR)
+        img_color = cv2.imread(utils.change_ext(file_manager.img_path + os.path.join('/', i), '.png'), cv2.IMREAD_COLOR)
         img_color = cv2.resize(img_color, (213, 192))
         img_b, img_g, img_r = cv2.split(img_color)
-        disp_color = cv2.imread(utils.change_ext(file_manager.disp_path + os.path.join('/', i), '.jpg'), 0)
+        disp_color = cv2.imread(utils.change_ext(file_manager.disp_path + os.path.join('/', i), '.png'), 0)
         depth = cv2.imread(utils.change_ext(file_manager.depth_path + os.path.join('/', i), '.png'), cv2.CV_16U)
         disp_color = cv2.resize(disp_color, (213, 192))
         depth = cv2.resize(depth, (213, 192))
